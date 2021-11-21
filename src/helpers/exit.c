@@ -6,7 +6,7 @@
 /*   By: vkuklys <vkuklys@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/11/09 18:45:20 by vkuklys           #+#    #+#             */
-/*   Updated: 2021/11/13 17:54:32 by vkuklys          ###   ########.fr       */
+/*   Updated: 2021/11/19 23:11:42 by vkuklys          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,6 +22,7 @@ int	free_and_destroy(t_arthur **arthurs)
 	data = arthurs[0]->data;
 	pthread_mutex_destroy(&data->mutex);
 	pthread_mutex_destroy(&data->death);
+	pthread_mutex_destroy(&data->waiting_line);
 	while (i < data->arthur_num)
 	{
 		pthread_mutex_destroy((*arthurs)[i].own_fork);
@@ -47,7 +48,8 @@ int	unlock_single_and_stop(t_arthur *arthur)
 
 int	handle_single_arthur(t_arthur *arthur, t_data *data, int id)
 {
+	printf("%lld %d has taken a fork\n",
+		wie_spat_ist_es() - data->start_time, id);
 	usleep(data->min_lifetime * 1000);
-	printf("%lld %d died\n", wie_spat_ist_es() - data->start_time, id);
 	return (unlock_single_and_stop(arthur));
 }

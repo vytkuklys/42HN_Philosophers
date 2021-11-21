@@ -6,7 +6,7 @@
 /*   By: vkuklys <vkuklys@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/11/08 16:47:37 by vkuklys           #+#    #+#             */
-/*   Updated: 2021/11/13 17:55:33 by vkuklys          ###   ########.fr       */
+/*   Updated: 2021/11/21 23:53:16 by vkuklys          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,56 +14,42 @@
 
 int	taking_forks(t_arthur *arthur, t_data *data, int id)
 {
+	if (data->all_arthurs_alive == 0)
+		return (1);
 	pthread_mutex_lock(arthur->own_fork);
-	usleep(250);
-	if (!data->all_arthurs_alive)
-		return (unlock_single_and_stop(arthur));
-	print_status(data, wie_spat_ist_es(), "has taken a fork", id);
 	if (arthur->neighbour_fork == arthur->own_fork)
 		return (handle_single_arthur(arthur, data, id));
 	pthread_mutex_lock(arthur->neighbour_fork);
-	usleep(250);
-	if (!data->all_arthurs_alive)
+	usleep(200);
+	if (data->all_arthurs_alive == 0)
 		return (unlock_and_stop(arthur));
-	print_status(data, wie_spat_ist_es(), "has taken a fork", id);
+	print_status(data, "has taken a fork", id, 1);
+	print_status(data, "has taken a fork", id, 1);
 	return (0);
 }
 
-int	sleeping(t_data *data, int id)
+int	sleeping(t_data **data, int id)
 {
 	long long	time;
 	long long	before;
 	long long	now;
 
+	usleep(100);
+	if ((*data)->all_arthurs_alive == 1)
+		print_status(*data, "is sleeping", id, 1);
+	else
+		return (1);
 	before = wie_spat_ist_es();
 	now = before;
-	print_status(data, wie_spat_ist_es(), "is sleeping", id);
-	if (data->sleep_time > data->min_lifetime)
-		time = data->min_lifetime;
-	else
-		time = data->sleep_time;
+	time = (*data)->sleep_time;
 	while ((now - before) < time)
 	{
-		if (!data->all_arthurs_alive)
+		if (!(*data)->all_arthurs_alive)
 			return (1);
 		usleep(100);
 		now = wie_spat_ist_es();
 	}
-	return (is_arthur_alive(data, data->sleep_time + data->eat_time, id, NULL));
-}
-
-int	thinking(t_data *data, int id)
-{
-	long long	before;
-	long long	now;
-	long long	time_used;
-
-	before = wie_spat_ist_es();
-	time_used = data->eat_time + data->sleep_time;
-	usleep(100);
-	now = wie_spat_ist_es();
-	return (is_arthur_alive(data, data->sleep_time
-			+ data->eat_time + (now - before), id, NULL));
+	return (0);
 }
 
 void	*start_routine(void *arg)
@@ -76,21 +62,42 @@ void	*start_routine(void *arg)
 	data = arthur->data;
 	meals = data->meals_num;
 	if (arthur->id % 2 == 0)
-		usleep(10000);
+		usleep(data->usleep_time);
 	while (data->all_arthurs_alive && meals != 0)
 	{
 		if (!data->all_arthurs_alive || taking_forks(arthur, data, arthur->id))
 			break ;
-		if (eating(arthur, data, arthur->id))
+		if (eating(&arthur, &data, arthur->id))
 			break ;
-		meals--;
-		if (meals == 0)
-			break ;
-		if (sleeping(data, arthur->id))
+		if (meals > 0)
+			meals--;
+		if (meals == 0 || sleeping(&data, arthur->id))
 			break ;
 		if (thinking(data, arthur->id))
 			break ;
 	}
+	return (NULL);
+}
+
+void	*line_them_up(void *arg)
+{
+	t_data		*data;
+	t_arthur	*arthur;
+	long long	i;
+
+	i = 0;
+	arthur = (void *)arg;
+	data = arthur->data;
+	pthread_mutex_lock(&data->waiting_line);
+	data->start_time = wie_spat_ist_es();
+	data->waiting++;
+	pthread_mutex_unlock(&data->waiting_line);
+	while (data->waiting != data->arthur_num)
+		;
+	pthread_mutex_lock(&data->waiting_line);
+	arthur->start_time = data->start_time;
+	pthread_mutex_unlock(&data->waiting_line);
+	start_routine(&(*arthur));
 	return (NULL);
 }
 
@@ -104,10 +111,13 @@ int	prepare_routine(t_arthur **arthurs)
 	while (i < data->arthur_num)
 	{
 		if (pthread_create(&(*arthurs)[i].th, NULL,
-			&start_routine, &(*arthurs)[i]) != 0)
+			&line_them_up, &(*arthurs)[i]) != 0)
 			return (join_pthreads(arthurs, i));
 		i++;
 	}
+	while (data->waiting != data->arthur_num)
+		usleep(100);
+	death_watch(arthurs, data);
 	i = 0;
 	while (i < data->arthur_num)
 	{

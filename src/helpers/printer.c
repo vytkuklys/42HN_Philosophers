@@ -6,18 +6,23 @@
 /*   By: vkuklys <vkuklys@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/11/08 14:49:33 by vkuklys           #+#    #+#             */
-/*   Updated: 2021/11/13 18:07:18 by vkuklys          ###   ########.fr       */
+/*   Updated: 2021/11/17 16:56:54 by vkuklys          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../../includes/philo.h"
 
-void	print_status(t_data *data, long long now, char *action, long long id)
+void	print_status(t_data *data, char *action, long long id, int flag)
 {
+	if (data->all_arthurs_alive == 0)
+		return ;
 	pthread_mutex_lock(&data->mutex);
-	usleep(10);
 	if (data->all_arthurs_alive == 1)
-		printf("%lld %lld %s\n", now - data->start_time, id, action);
+	{
+		printf("%lld %lld %s\n", wie_spat_ist_es() - data->start_time,
+			id, action);
+		data->all_arthurs_alive = flag;
+	}
 	pthread_mutex_unlock(&data->mutex);
 }
 
@@ -27,7 +32,7 @@ int	get_random(void)
 	int				random;
 
 	gettimeofday(&time, NULL);
-	random = time.tv_sec % 10;
+	random = time.tv_sec % 7;
 	return (random);
 }
 
@@ -36,8 +41,7 @@ void	post_mortem(void)
 	int	random;
 
 	random = get_random();
-	if (random < 7)
-		write(1, "\nArthur - ", 11);
+	write(1, "\nArthur - ", 11);
 	if (random == 1)
 		write(1, "”One should use common words to say uncommon things.”\n", 59);
 	else if (random == 2)

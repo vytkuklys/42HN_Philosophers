@@ -6,7 +6,7 @@
 /*   By: vkuklys <vkuklys@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/11/12 22:11:18 by vkuklys           #+#    #+#             */
-/*   Updated: 2021/11/12 23:45:12 by vkuklys          ###   ########.fr       */
+/*   Updated: 2021/11/21 23:52:25 by vkuklys          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,6 +14,8 @@
 
 int	join_pthreads(t_arthur **arthurs, int i)
 {
+	usleep(200);
+	i--;
 	while (i >= 0)
 	{
 		if (pthread_join((*arthurs)[i].th, NULL) != 0)
@@ -42,9 +44,12 @@ int	free_arthurs(t_arthur **arthurs, int i, int flag)
 	return (0);
 }
 
-int	destroy_mutex(pthread_mutex_t	*mutex)
+int	destroy_mutex(pthread_mutex_t	*m1, pthread_mutex_t	*m2)
 {
-	pthread_mutex_destroy(mutex);
+	if (m1 != NULL)
+		pthread_mutex_destroy(m1);
+	if (m2 != NULL)
+		pthread_mutex_destroy(m2);
 	return (print_and_quit("Failed to initialize a mutex\n"));
 }
 

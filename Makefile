@@ -6,7 +6,7 @@
 #    By: vkuklys <vkuklys@student.42.fr>            +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2021/08/11 12:13:12 by jludt             #+#    #+#              #
-#    Updated: 2021/11/12 23:39:47 by vkuklys          ###   ########.fr        #
+#    Updated: 2021/11/16 21:07:51 by vkuklys          ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -29,7 +29,7 @@ OBJ_DIR = ./obj/
 INC_DIR = ./includes/
 
 # Source files and object files
-SRC_FILES = main.c not_a_libft/ft_atoi.c not_a_libft/ft_calloc.c not_a_libft/ft_isdigit.c not_a_libft/ft_strlen.c \
+SRC_FILES = main.c not_a_libft/ft_atoi.c not_a_libft/ft_isdigit.c not_a_libft/ft_strlen.c \
 			not_a_libft/ft_print_and_quit.c validation/validation.c helpers/time.c helpers/init.c helpers/checker.c \
 			actions/actions.c helpers/printer.c helpers/exit.c helpers/free.c actions/actions_utils.c
 # SRC_FILES = main.c

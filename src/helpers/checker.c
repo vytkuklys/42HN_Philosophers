@@ -6,30 +6,59 @@
 /*   By: vkuklys <vkuklys@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/11/08 16:49:10 by vkuklys           #+#    #+#             */
-/*   Updated: 2021/11/13 17:13:04 by vkuklys          ###   ########.fr       */
+/*   Updated: 2021/11/20 00:25:18 by vkuklys          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../../includes/philo.h"
 
-int	is_arthur_alive(t_data *data, long long num, int id, int *first_meal)
+static int	are_enough_meals_eaten(t_arthur **arthurs, t_data *data)
 {
-	long long	duration;
+	long long	meals;
+	long long	i;
 
-	duration = num;
-	if (first_meal != NULL && (*first_meal))
-	{
-		(*first_meal) = 0;
-		duration = wie_spat_ist_es() - data->start_time;
-	}
-	if (duration >= data->min_lifetime)
-	{
-		pthread_mutex_lock(&data->death);
-		if (data->all_arthurs_alive == 1)
-			printf("%lld %d died\n", wie_spat_ist_es() - data->start_time, id);
-		data->all_arthurs_alive = 0;
-		pthread_mutex_unlock(&data->death);
+	if ((*arthurs)[0].total_meals == -1)
 		return (1);
+	else if (data->eat_time * (2 + (data->arthur_num % 2))
+		== data->min_lifetime)
+		return (1);
+	i = 0;
+	meals = 0;
+	while (i < data->arthur_num)
+	{
+		meals += (*arthurs)[i].total_meals;
+		i++;
 	}
-	return (0);
+	if (meals / i == data->meals_num)
+		return (0);
+	return (1);
+}
+
+void	death_watch(t_arthur **arthurs, t_data *data)
+{
+	int	j;
+	int	i;
+
+	i = 0;
+	usleep(data->usleep_time);
+	while (i > -1)
+	{
+		j = 0;
+		while (j < data->arthur_num)
+		{
+			if (wie_spat_ist_es() - (*arthurs)[j].start_time >=
+				data->min_lifetime)
+			{
+				if (data->meals_num == -1 || are_enough_meals_eaten(arthurs,
+						data))
+					print_status(data, "died", (*arthurs)[j].id, 0);
+				data->all_arthurs_alive = 0;
+				i = -3;
+				break ;
+			}
+			usleep(100);
+			j++;
+		}
+		i++;
+	}
 }
