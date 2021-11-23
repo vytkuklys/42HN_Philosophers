@@ -10,7 +10,7 @@ A 42 project that involes threading a process with mutexes to solve <a href="htt
 ## Meaning of arguments
 
 * 1st argument: numbers of philosophers
-* 2nd argument: time to start eating after the beginning of the last meal in order to survive
+* 2nd argument: time to start eating after the beginning of the last meal (or start of the program) in order to survive
 * 3rd argument: time to eat
 * 4th argument: time to sleep
 * 5th argument (optional): number of required meals per philosopher (program stops after the number is reached)
